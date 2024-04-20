@@ -43,3 +43,4 @@ with tab4:
     renderer.chart(0)
     st.markdown("### registered per day")
     renderer.chart(1)
+    
