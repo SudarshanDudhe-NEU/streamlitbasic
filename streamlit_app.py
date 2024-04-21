@@ -1,46 +1,61 @@
-from pygwalker.api.streamlit import StreamlitRenderer, init_streamlit_comm
-import pandas as pd
 import streamlit as st
+import plotly.express as px
 
-# Adjust the width of the Streamlit page
-st.set_page_config(
-    page_title="Use Pygwalker In Streamlit",
-    layout="wide"
+# Page functions
+def page_home():
+    st.title("Welcome Home!")
+    st.write("This is the home page. Feel free to explore the other pages.")
+
+def page_about():
+    st.title("About This App")
+    st.write("This app demonstrates multi-page navigation using buttons in Streamlit.")
+
+def page_data():
+    st.title("Data Visualization")
+    df = px.data.iris()  # Load sample Iris dataset
+    fig = px.scatter(df, x="sepal_width", y="sepal_length", color="species")
+    st.plotly_chart(fig)
+
+def page_contact():
+    st.title("Contact Us")
+    st.write("Reach out to us at: example@example.com")
+
+# Dictionary of pages
+pages = {
+    "Home": page_home,
+    "About": page_about,
+    "Data": page_data,
+    "Contact": page_contact
+}
+
+# --- Styling ---
+st.markdown(
+    """
+    <style>
+        .sidebar .sidebar-content {
+            padding-top: 2rem;
+            padding-bottom: 10rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .stTabs > div[role="tablist"] > .stTab {
+            flex: 1;
+        }
+        .stTabs > div[role="tablist"] {
+            display: flex;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
-# Initialize pygwalker communication
-init_streamlit_comm()
+# --- Layout ---
+st.sidebar.title("Navigation")
+selected_page = st.sidebar.radio("", list(pages.keys()))
 
-# Add Title
-st.title("Use Pygwalker In Streamlit")
+with st.container():  # Create a container for content
+    st.title("My Streamlit App")
+    st.write("Explore different functionalities using the navigation menu.")
 
-# You should cache your pygwalker renderer, if you don't want your memory to explode
-@st.cache_resource
-def get_pyg_renderer() -> "StreamlitRenderer":
-    df = pd.read_csv("https://kanaries-app.s3.ap-northeast-1.amazonaws.com/public-datasets/bike_sharing_dc.csv")
-    # When you need to publish your application, you need set `debug=False`,prevent other users to write your config file.
-    return StreamlitRenderer(df, spec="./gw_config.json", debug=False)
-
-renderer = get_pyg_renderer()
-
-st.subheader("Display Explore UI")
-
-tab1, tab2, tab3, tab4 = st.tabs(
-    ["graphic walker", "data profiling", "graphic renderer", "pure chart"]
-)
-
-with tab1:
-    renderer.explorer()
-
-with tab2:
-    renderer.explorer(default_tab="data")
-
-with tab3:
-    renderer.viewer()
-
-with tab4:
-    st.markdown("### registered per weekday")
-    renderer.chart(0)
-    st.markdown("### registered per day")
-    renderer.chart(1)
-    
+    # Display the selected page
+    pages[selected_page]()
